@@ -26,7 +26,7 @@ bool Value::operator==(const Value& other) const {
         return asInt() == other.asInt();
     }
     if (other.type_ == BOOL && (type_ == INT || type_ == FLOAT)) {
-        return int_val_ == other.asInt();
+        return asInt() == other.asInt();
     }
 
     return false;
