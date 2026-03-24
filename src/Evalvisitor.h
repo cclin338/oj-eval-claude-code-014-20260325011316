@@ -85,8 +85,19 @@ public:
         if (type_ == INT) return std::to_string(int_val_);
         if (type_ == FLOAT) {
             std::ostringstream oss;
-            oss << std::fixed << std::setprecision(6) << float_val_;
-            return oss.str();
+            oss << std::setprecision(15) << std::defaultfloat << float_val_;
+            std::string s = oss.str();
+
+            // Check if the string contains a decimal point or exponent
+            bool has_decimal_or_exp = (s.find('.') != std::string::npos) ||
+                                      (s.find('e') != std::string::npos) ||
+                                      (s.find('E') != std::string::npos);
+
+            if (!has_decimal_or_exp) {
+                // Add .0 for whole numbers that are floats
+                s += ".0";
+            }
+            return s;
         }
         if (type_ == NONE) return "None";
         if (type_ == TUPLE) {

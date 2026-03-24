@@ -677,6 +677,66 @@ void EvalVisitor::executeStatement(Python3Parser::StmtContext* ctx) {
 void EvalVisitor::executeExprStmt(Python3Parser::Expr_stmtContext* ctx) {
     size_t testlist_count = ctx->testlist().size();
     size_t assign_count = ctx->ASSIGN().size();
+    auto augassign = ctx->augassign();
+
+    // Check for augmented assignment
+    if (augassign) {
+        // Augmented assignment: var op= value
+        // testlist(0) is the variable, testlist(1) is the value
+        Value lhs_value = std::any_cast<Value>(visit(ctx->testlist(0)));
+        Value rhs_value = std::any_cast<Value>(visit(ctx->testlist(1)));
+
+        Value result;
+        if (augassign->ADD_ASSIGN()) {
+            result = lhs_value + rhs_value;
+        } else if (augassign->SUB_ASSIGN()) {
+            result = lhs_value - rhs_value;
+        } else if (augassign->MULT_ASSIGN()) {
+            result = lhs_value * rhs_value;
+        } else if (augassign->DIV_ASSIGN()) {
+            result = lhs_value / rhs_value;
+        } else if (augassign->IDIV_ASSIGN()) {
+            result = lhs_value.floorDiv(rhs_value);
+        } else if (augassign->MOD_ASSIGN()) {
+            result = lhs_value % rhs_value;
+        }
+
+        // Extract variable name and assign result
+        auto testlist = ctx->testlist(0);
+        if (testlist->test().size() == 1) {
+            auto test = testlist->test(0);
+            auto or_test = test->or_test();
+            if (or_test->and_test().size() == 1) {
+                auto and_test = or_test->and_test(0);
+                if (and_test->not_test().size() == 1) {
+                    auto not_test = and_test->not_test(0);
+                    if (not_test->comparison()) {
+                        auto comparison = not_test->comparison();
+                        if (comparison->arith_expr().size() == 1) {
+                            auto arith_expr = comparison->arith_expr(0);
+                            if (arith_expr->term().size() == 1) {
+                                auto term = arith_expr->term(0);
+                                if (term->factor().size() == 1) {
+                                    auto factor = term->factor(0);
+                                    if (factor->atom_expr()) {
+                                        auto atom_expr = factor->atom_expr();
+                                        if (atom_expr->atom()) {
+                                            auto atom = atom_expr->atom();
+                                            if (atom->NAME()) {
+                                                std::string name = atom->NAME()->toString();
+                                                current_scope->set(name, result);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return;
+    }
 
     if (assign_count == 0) {
         // Just an expression
