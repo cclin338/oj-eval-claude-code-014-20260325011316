@@ -11,7 +11,7 @@ include_directories(
 )
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/generated)
-### YOU CAN"T MODIFY THE CODE ABOVE
+### YOU CAN'T MODIFY THE CODE ABOVE
 
 file(GLOB_RECURSE main_src src/*.cpp)
 
@@ -20,4 +20,4 @@ add_executable(code ${main_src}) # Add all *.cpp file after src/main.cpp, like s
 ### YOU CAN'T MODIFY THE CODE BELOW
 target_link_libraries(code PyAntlr)
 target_link_libraries(code antlr4-runtime)
-### YOU CAN"T MODIFY THE CODE ABOVE
+### YOU CAN'T MODIFY THE CODE ABOVE
